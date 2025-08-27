@@ -19,6 +19,9 @@ export interface Task {
   completed: boolean;
   created_at: string;
   updated_at: string;
+  processed_data?: any;
+  processed_at?: string;
+  status?: string;
 }
 
 export interface CreateTaskData {

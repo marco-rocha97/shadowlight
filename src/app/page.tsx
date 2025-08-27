@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { supabase, Task, CreateTaskData, UpdateTaskData } from '@/lib/supabase';
+import { triggerWebhook } from '@/lib/webhook';
 
 export default function TodoList() {
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -65,6 +66,9 @@ export default function TodoList() {
       setTasks([data, ...tasks]);
       setNewTaskTitle('');
       setNewTaskDescription('');
+      
+      // Trigger webhook for background processing
+      triggerWebhook(data);
     } catch (err) {
       console.error('Error adding task:', err);
       setError('Failed to add task. Please try again.');
@@ -189,6 +193,14 @@ export default function TodoList() {
             Shadowlight
           </h1>
           <p className="text-gray-600 text-lg">Your personal task manager</p>
+          <div className="mt-4">
+            <a
+              href="/webhook-test"
+              className="inline-flex items-center px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm font-medium transition-colors duration-200"
+            >
+              🔗 Webhook Testing
+            </a>
+          </div>
         </div>
 
         {/* Error message */}
