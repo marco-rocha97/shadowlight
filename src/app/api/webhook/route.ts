@@ -21,36 +21,119 @@ export async function POST(request: NextRequest) {
     const taskData = {
       title: body.title || 'Task from n8n',
       description: body.description || 'Task created via webhook',
-      completed: false
+      completed: body.completed !== undefined ? body.completed : false
     };
     
-    console.log('Creating task from webhook:', taskData);
+    let result;
+    let operation;
     
-    // Create the task directly in the tasks table
-    const { data, error } = await supabase
-      .from('tasks')
-      .insert([taskData])
-      .select()
-      .single();
-    
-    if (error) {
-      console.error('Error creating task from webhook:', error);
-      return NextResponse.json(
-        { 
-          error: 'Failed to create task from webhook',
-          details: error.message,
-          code: error.code
-        },
-        { status: 500 }
-      );
+    // Check if we have a task_id to update an existing task
+    if (body.task_id) {
+      console.log('Attempting to update existing task:', body.task_id);
+      
+      // First, check if the task exists
+      const { data: existingTask, error: checkError } = await supabase
+        .from('tasks')
+        .select('id')
+        .eq('id', body.task_id)
+        .single();
+      
+      if (checkError && checkError.code !== 'PGRST116') { // PGRST116 = no rows returned
+        console.error('Error checking existing task:', checkError);
+        return NextResponse.json(
+          { 
+            error: 'Failed to check existing task',
+            details: checkError.message,
+            code: checkError.code
+          },
+          { status: 500 }
+        );
+      }
+      
+      if (existingTask) {
+        // Task exists, update it
+        console.log('Updating existing task:', existingTask.id);
+        
+        const { data, error } = await supabase
+          .from('tasks')
+          .update(taskData)
+          .eq('id', body.task_id)
+          .select()
+          .single();
+        
+        if (error) {
+          console.error('Error updating task from webhook:', error);
+          return NextResponse.json(
+            { 
+              error: 'Failed to update task from webhook',
+              details: error.message,
+              code: error.code
+            },
+            { status: 500 }
+          );
+        }
+        
+        result = data;
+        operation = 'updated';
+        console.log('Task updated successfully from webhook:', data);
+      } else {
+        // Task doesn't exist, create new one with the provided ID
+        console.log('Task ID provided but not found, creating new task with specified ID');
+        
+        const { data, error } = await supabase
+          .from('tasks')
+          .insert([{ id: body.task_id, ...taskData }])
+          .select()
+          .single();
+        
+        if (error) {
+          console.error('Error creating task with specified ID from webhook:', error);
+          return NextResponse.json(
+            { 
+              error: 'Failed to create task with specified ID from webhook',
+              details: error.message,
+              code: error.code
+            },
+            { status: 500 }
+          );
+        }
+        
+        result = data;
+        operation = 'created';
+        console.log('Task created successfully with specified ID from webhook:', data);
+      }
+    } else {
+      // No task_id provided, create new task
+      console.log('Creating new task from webhook:', taskData);
+      
+      const { data, error } = await supabase
+        .from('tasks')
+        .insert([taskData])
+        .select()
+        .single();
+      
+      if (error) {
+        console.error('Error creating task from webhook:', error);
+        return NextResponse.json(
+          { 
+            error: 'Failed to create task from webhook',
+            details: error.message,
+            code: error.code
+          },
+          { status: 500 }
+        );
+      }
+      
+      result = data;
+      operation = 'created';
+      console.log('Task created successfully from webhook:', data);
     }
-    
-    console.log('Task created successfully from webhook:', data);
     
     return NextResponse.json({
       success: true,
-      message: 'Task created successfully from webhook',
-      task: data,
+      message: `Task ${operation} successfully from webhook`,
+      task: result,
+      operation: operation,
       timestamp: new Date().toISOString()
     });
     
