@@ -46,6 +46,9 @@ The `tasks` table has the following structure:
 - `title`: Task title (required)
 - `description`: Task description (optional)
 - `completed`: Completion status (boolean)
+- `processed_data`: JSON payload produced by processing (JSONB)
+- `processed_at`: When the task was processed (timestamptz)
+- `status`: Processing status, defaults to `pending` (TEXT)
 - `created_at`: Creation timestamp
 - `updated_at`: Last update timestamp
 

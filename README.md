@@ -1,36 +1,69 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+## Shadowlight
 
-## Getting Started
+Shadowlight is a Next.js app backed by Supabase with an external n8n workflow that ingests WhatsApp-like webhook events, cleans/enriches content using OpenAI, aggregates recent messages in Redis, and creates or updates tasks via a webhook endpoint.
 
-First, run the development server:
+### Architecture
+- **Frontend**: Next.js App Router (`src/app`)
+- **APIs**: Next.js API routes (`src/app/api/*`), including `/api/webhook`
+- **Database**: Supabase Postgres
+- **Automation**: n8n workflow for media handling, LLM enrichment, and task upserts
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+### Database (Supabase)
+Run `supabase-setup.sql` in your Supabase project. It creates `public.tasks` with:
+- `id` (UUID), `title` (TEXT), `description` (TEXT), `completed` (BOOLEAN)
+- `processed_data` (JSONB), `processed_at` (timestamptz), `status` (TEXT default `pending`)
+- `created_at`, `updated_at` timestamps, RLS enabled, helpful indexes
+
+See `SUPABASE_SETUP.md` for step-by-step setup.
+
+### App Webhook API
+The n8n workflow calls the app to create or modify tasks.
+- **URL**: `/api/webhook`
+- **Method**: POST
+- **Body**:
+```json
+{
+  "task_id": "optional existing id",
+  "title": "enhanced title",
+  "description": "enhanced description"
+}
 ```
+If `task_id` is provided, the app updates that task; otherwise it creates a new one. Your logic can persist processing results in `processed_data`, set `processed_at`, and update `status`.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### n8n Workflow (overview)
+External workflow that:
+- Receives events from Evolution webhook (WhatsApp-like) and normalizes fields
+- Detects message type (text, audio, image, document)
+- For media, fetches base64 from Evolution, converts to binary, then:
+  - Transcribes audio with OpenAI
+  - Describes images with OpenAI vision
+  - Extracts text from PDFs
+- Buffers recent messages per chat in Redis under `<chat_id>_buf`, aggregates after 15s inactivity, and cleans text
+- Prompts OpenAI (chat) to produce structured task `{ task_id, title, description }`
+- POSTs to `/api/webhook` to create/update the task
+- Optionally replies to the user via Evolution API with the enhanced title
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Environment Variables
+Create `.env.local` with:
+```env
+NEXT_PUBLIC_SUPABASE_URL=...
+NEXT_PUBLIC_SUPABASE_ANON_KEY=...
+```
+Credentials for OpenAI, Evolution, and Redis are configured inside n8n.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### Local Development
+```bash
+npm install
+npm run dev
+```
+Open http://localhost:3000.
 
-## Learn More
+### Project Layout
+- `src/app/api/*`: API routes, including `/api/webhook`
+- `src/lib/*`: app libraries (e.g., `supabase.ts`, `webhook.ts`)
+- `supabase-setup.sql`: database schema
+- `SUPABASE_SETUP.md`: database setup guide
+- `WEBHOOK_API_README.md`: webhook API details
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### Notes
+- `webhook-setup.sql` was removed; its columns moved into `supabase-setup.sql`.
