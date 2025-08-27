@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { supabase, Task, CreateTaskData, UpdateTaskData } from '@/lib/supabase';
 import { triggerWebhook } from '@/lib/webhook';
 
@@ -178,7 +179,7 @@ export default function TodoList() {
     return (
       <div className="min-h-screen bg-white text-gray-800 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black mx-auto mb-4"></div>
           <p className="text-gray-600">Loading tasks...</p>
         </div>
       </div>
@@ -189,10 +190,12 @@ export default function TodoList() {
     <div className="min-h-screen bg-white text-gray-800">
       <div className="container mx-auto px-4 py-8 max-w-3xl">
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">
-            Shadowlight
+          <Image src="/sls-logo.jpg" alt="Shadow Light Studios" width={72} height={72} className="mx-auto mb-4 rounded-full" />
+          <h1 className="text-4xl font-bold text-gray-900 mb-3">
+            Shadow Light Studios
           </h1>
-          <p className="text-gray-600 text-lg">Your personal task manager</p>
+          <p className="text-gray-700 text-base md:text-lg">Unlock the next stage of growth</p>
+          <p className="text-gray-500 text-sm md:text-base mt-1">Todo List</p>
         </div>
 
         {/* Error message */}
@@ -210,7 +213,7 @@ export default function TodoList() {
 
         {/* Add new task */}
         <div className="bg-gray-50 rounded-lg p-6 mb-6 border border-gray-200">
-          <h2 className="text-lg font-semibold text-gray-800 mb-4">Add New Task</h2>
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">Add New Task</h2>
           <div className="space-y-4">
             <input
               type="text"
@@ -218,18 +221,18 @@ export default function TodoList() {
               onChange={(e) => setNewTaskTitle(e.target.value)}
               onKeyPress={(e) => handleKeyPress(e, addTask)}
               placeholder="Task title"
-              className="w-full bg-white border border-gray-300 rounded-lg px-4 py-3 text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full bg-white border border-gray-300 rounded-lg px-4 py-3 text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
             />
             <textarea
               value={newTaskDescription}
               onChange={(e) => setNewTaskDescription(e.target.value)}
               placeholder="Task description (optional)"
               rows={3}
-              className="w-full bg-white border border-gray-300 rounded-lg px-4 py-3 text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+              className="w-full bg-white border border-gray-300 rounded-lg px-4 py-3 text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent resize-none"
             />
             <button
               onClick={addTask}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="bg-black hover:bg-gray-900 text-white px-6 py-3 rounded-lg font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-black"
             >
               Add Task
             </button>
@@ -240,7 +243,6 @@ export default function TodoList() {
         <div className="space-y-4">
           {tasks.length === 0 ? (
             <div className="text-center py-12 text-gray-500">
-              <div className="text-6xl mb-4">✨</div>
               <p className="text-xl">No tasks yet!</p>
               <p className="text-sm">Add your first task above to get started.</p>
             </div>
@@ -292,7 +294,7 @@ export default function TodoList() {
                         type="checkbox"
                         checked={task.completed}
                         onChange={() => toggleTask(task.id)}
-                        className="w-5 h-5 text-blue-600 bg-white border-gray-300 rounded focus:ring-blue-500 focus:ring-2 mt-1"
+                        className="w-5 h-5 text-black bg-white border-gray-300 rounded focus:ring-black focus:ring-2 mt-1"
                       />
                       <div className="flex-1">
                         <h3
@@ -319,7 +321,7 @@ export default function TodoList() {
                     <div className="flex gap-2 pt-2">
                       <button
                         onClick={() => startEditing(task)}
-                        className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-2 rounded-lg text-sm transition-colors"
+                        className="bg-black hover:bg-gray-900 text-white px-3 py-2 rounded-lg text-sm transition-colors"
                       >
                         Edit
                       </button>
