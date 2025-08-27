@@ -193,14 +193,6 @@ export default function TodoList() {
             Shadowlight
           </h1>
           <p className="text-gray-600 text-lg">Your personal task manager</p>
-          <div className="mt-4">
-            <a
-              href="/webhook-test"
-              className="inline-flex items-center px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm font-medium transition-colors duration-200"
-            >
-              🔗 Webhook Testing
-            </a>
-          </div>
         </div>
 
         {/* Error message */}
