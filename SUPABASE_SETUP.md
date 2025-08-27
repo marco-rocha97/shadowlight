@@ -9,7 +9,7 @@
 2. Click "New Project"
 3. Choose your organization
 4. Enter a project name (e.g., "shadowlight-todo")
-5. Enter a database password (save this!) WCoj9awdHKWjMsxr
+5. Enter a database password (save this!). For local dev, store it in an env var: `SUPABASE_DB_PASSWORD`.
 6. Choose a region close to you
 7. Click "Create new project"
 
@@ -25,7 +25,9 @@
 
 ```env
 NEXT_PUBLIC_SUPABASE_URL=https://xxxxxxxxxxxxx.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJ...
+N8N_WEBHOOK_URL=https://your-n8n-host/webhook/shadowlight
+SUPABASE_DB_PASSWORD=your_strong_password
 ```
 
 ## Step 4: Set Up the Database

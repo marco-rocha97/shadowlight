@@ -1,5 +1,6 @@
 // Webhook service for triggering n8n workflow
-const N8N_WEBHOOK_URL = 'https://n8n-n8n.bhfeyq.easypanel.host/webhook/shadowlight';
+// Use env var with a safe fallback to avoid breaking client usage during local/dev
+const N8N_WEBHOOK_URL = (process.env.N8N_WEBHOOK_URL as string);
 
 export interface WebhookPayload {
   task_id: string;
