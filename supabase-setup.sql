@@ -4,6 +4,9 @@ CREATE TABLE IF NOT EXISTS public.tasks (
     title TEXT NOT NULL,
     description TEXT DEFAULT '',
     completed BOOLEAN DEFAULT FALSE,
+    processed_data JSONB,
+    processed_at TIMESTAMP WITH TIME ZONE,
+    status TEXT DEFAULT 'pending',
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
@@ -20,6 +23,15 @@ CREATE POLICY "Allow all operations for tasks" ON public.tasks
 
 -- Create an index on created_at for better performance
 CREATE INDEX IF NOT EXISTS idx_tasks_created_at ON public.tasks(created_at DESC);
+
+-- Ensure new columns exist for existing databases
+ALTER TABLE public.tasks 
+ADD COLUMN IF NOT EXISTS processed_data JSONB,
+ADD COLUMN IF NOT EXISTS processed_at TIMESTAMP WITH TIME ZONE,
+ADD COLUMN IF NOT EXISTS status TEXT DEFAULT 'pending';
+
+-- Helpful index on status for filtering
+CREATE INDEX IF NOT EXISTS idx_tasks_status ON public.tasks(status);
 
 -- Create a function to automatically update the updated_at timestamp
 CREATE OR REPLACE FUNCTION update_updated_at_column()
