@@ -1,12 +1,25 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
+
+interface WebhookStatus {
+  status?: string;
+  message?: string;
+  error?: string;
+}
+
+interface TestResult {
+  success?: boolean;
+  message?: string;
+  error?: string;
+}
 
 export default function WebhookTestPage() {
   const [testTitle, setTestTitle] = useState('Test Task');
   const [testDescription, setTestDescription] = useState('Test Description');
-  const [webhookStatus, setWebhookStatus] = useState<any>(null);
-  const [testResult, setTestResult] = useState<any>(null);
+  const [webhookStatus, setWebhookStatus] = useState<WebhookStatus | null>(null);
+  const [testResult, setTestResult] = useState<TestResult | null>(null);
   const [loading, setLoading] = useState(false);
 
   const testWebhook = async () => {
@@ -25,7 +38,7 @@ export default function WebhookTestPage() {
 
       const result = await response.json();
       setTestResult(result);
-    } catch (error) {
+    } catch {
       setTestResult({ error: 'Failed to test webhook' });
     } finally {
       setLoading(false);
@@ -38,7 +51,7 @@ export default function WebhookTestPage() {
       const response = await fetch('/api/webhook-status');
       const result = await response.json();
       setWebhookStatus(result);
-    } catch (error) {
+    } catch {
       setWebhookStatus({ error: 'Failed to check webhook status' });
     } finally {
       setLoading(false);
@@ -146,12 +159,12 @@ export default function WebhookTestPage() {
 
         {/* Back to Main App */}
         <div className="mt-8 text-center">
-          <a
+          <Link
             href="/"
             className="text-blue-600 hover:text-blue-800 underline"
           >
             ← Back to Task Manager
-          </a>
+          </Link>
         </div>
       </div>
     </div>

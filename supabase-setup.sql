@@ -13,6 +13,7 @@ ALTER TABLE public.tasks ENABLE ROW LEVEL SECURITY;
 
 -- Create a policy that allows all operations (for demo purposes)
 -- In production, you might want to restrict this based on user authentication
+DROP POLICY IF EXISTS "Allow all operations for tasks" ON public.tasks;
 CREATE POLICY "Allow all operations for tasks" ON public.tasks
     FOR ALL USING (true)
     WITH CHECK (true);
@@ -30,12 +31,17 @@ END;
 $$ language 'plpgsql';
 
 -- Create a trigger to automatically update the updated_at column
+DROP TRIGGER IF EXISTS update_tasks_updated_at ON public.tasks;
 CREATE TRIGGER update_tasks_updated_at 
     BEFORE UPDATE ON public.tasks 
     FOR EACH ROW 
     EXECUTE FUNCTION update_updated_at_column();
 
--- Insert some sample data (optional)
-INSERT INTO public.tasks (title, description) VALUES
-    ('Welcome to Shadowlight', 'This is your first task! Click the checkbox to mark it as complete.'),
-    ('Explore the app', 'Try adding, editing, and deleting tasks to see how everything works.');
+-- Insert some sample data (optional) - only if table is empty
+INSERT INTO public.tasks (title, description) 
+SELECT 'Welcome to Shadowlight', 'This is your first task! Click the checkbox to mark it as complete.'
+WHERE NOT EXISTS (SELECT 1 FROM public.tasks WHERE title = 'Welcome to Shadowlight');
+
+INSERT INTO public.tasks (title, description) 
+SELECT 'Explore the app', 'Try adding, editing, and deleting tasks to see how everything works.'
+WHERE NOT EXISTS (SELECT 1 FROM public.tasks WHERE title = 'Explore the app');

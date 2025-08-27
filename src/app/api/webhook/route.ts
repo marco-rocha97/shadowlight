@@ -6,41 +6,63 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     
     // Log the webhook data for debugging
-    console.log('Webhook received:', body);
+    console.log('Webhook received from n8n:', JSON.stringify(body, null, 2));
     
-    // Process the webhook data here
-    // This is where you would handle the data from n8n
-    const processedData = {
-      ...body,
-      processed_at: new Date().toISOString(),
-      status: 'processed'
+    // Validate the request body
+    if (!body || typeof body !== 'object') {
+      console.error('Invalid webhook body:', body);
+      return NextResponse.json(
+        { error: 'Invalid webhook data format' },
+        { status: 400 }
+      );
+    }
+    
+    // Extract task data from n8n webhook
+    const taskData = {
+      title: body.title || 'Task from n8n',
+      description: body.description || 'Task created via webhook',
+      completed: false
     };
     
-    // Store the processed data in a new table (you'll need to create this)
+    console.log('Creating task from webhook:', taskData);
+    
+    // Create the task directly in the tasks table
     const { data, error } = await supabase
-      .from('webhook_data')
-      .insert([processedData])
+      .from('tasks')
+      .insert([taskData])
       .select()
       .single();
     
     if (error) {
-      console.error('Error storing webhook data:', error);
+      console.error('Error creating task from webhook:', error);
       return NextResponse.json(
-        { error: 'Failed to store webhook data' },
+        { 
+          error: 'Failed to create task from webhook',
+          details: error.message,
+          code: error.code
+        },
         { status: 500 }
       );
     }
     
+    console.log('Task created successfully from webhook:', data);
+    
     return NextResponse.json({
       success: true,
-      message: 'Webhook data processed successfully',
-      data: data
+      message: 'Task created successfully from webhook',
+      task: data,
+      timestamp: new Date().toISOString()
     });
     
   } catch (error) {
     console.error('Webhook processing error:', error);
+    
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { 
+        error: 'Internal server error',
+        message: error instanceof Error ? error.message : 'Unknown error',
+        timestamp: new Date().toISOString()
+      },
       { status: 500 }
     );
   }
@@ -49,6 +71,7 @@ export async function POST(request: NextRequest) {
 export async function GET() {
   return NextResponse.json({
     message: 'Webhook endpoint is active',
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
+    status: 'healthy'
   });
 }
