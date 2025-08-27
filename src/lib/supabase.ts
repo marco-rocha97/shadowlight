@@ -19,7 +19,7 @@ export interface Task {
   completed: boolean;
   created_at: string;
   updated_at: string;
-  processed_data?: any;
+  processed_data?: Record<string, unknown>;
   processed_at?: string;
   status?: string;
 }
