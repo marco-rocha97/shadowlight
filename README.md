@@ -64,6 +64,3 @@ Open http://localhost:3000.
 - `supabase-setup.sql`: database schema
 - `SUPABASE_SETUP.md`: database setup guide
 - `WEBHOOK_API_README.md`: webhook API details
-
-### Notes
-- `webhook-setup.sql` was removed; its columns moved into `supabase-setup.sql`.
